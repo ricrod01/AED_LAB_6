@@ -31,17 +31,17 @@ public class Main {
             else if(opcion.equals("4"))
             {
                 flag = false;
-                System.out.println("Adiós");
+                System.out.println("\nAdiós");
             }
             else
             {
-                System.out.println("Opción incorrecta.");
+                System.out.println("\nOpción incorrecta.");
             }
         }
 
         if (flag2)
         {
-            Pattern pattern = Pattern.compile( "([^,]+),([^,]+),([^,]+),([^,]+),([^,]+),([^,]+),([^,]+),\"([^\"]+)\",([^,]+),([^,]+)");
+            Pattern pattern = Pattern.compile( "([^,]+),([^,]+),([^,]+),(?:([^,]+)?,)?([^,]+),([^,]+),([^,]+),\"?([^\"]+?)\"?,([0-9]+),(Yes|No)" );
 
             Map<String, Pokemon> pokemonMap = MapFactory.tipoMapa(opcion);
             String csvFile = "pokemon_data_pokeapi.csv";
@@ -64,11 +64,11 @@ public class Main {
                     String nombre = matcher.group(1);
                     int numeroPokedex = Integer.parseInt(matcher.group(2));
                     String tipoPrincipal = matcher.group(3);
-                    String tipoSecundario = matcher.group(4).isEmpty() ? null : matcher.group(4);
+                    String tipoSecundario = (matcher.group(4) != null) ? matcher.group(4) : "N/A";
                     String clasificacion = matcher.group(5);
                     float tamanio = Float.parseFloat(matcher.group(6));
                     float peso = Float.parseFloat(matcher.group(7));
-                    String[] habilidades = matcher.group(8).split(", "); 
+                    String[] habilidades = matcher.group(8).split(", ");
                     int generacion = Integer.parseInt(matcher.group(9));
                     boolean legendario = matcher.group(10).equalsIgnoreCase("Yes");
 
@@ -79,10 +79,10 @@ public class Main {
             }
             catch (IOException e)
             {
-                System.out.println("Error al leer el archivo: " + e.getMessage());
+                System.out.println("\nError al leer el archivo: " + e.getMessage());
             } catch (NumberFormatException e)
             {
-                System.out.println("Error al convertir datos numéricos: " + e.getMessage());
+                System.out.println("\nError al convertir datos numéricos: " + e.getMessage());
             }
 
             if(pokemonMap.size()>0)
@@ -99,43 +99,100 @@ public class Main {
                     System.out.println("3) Mostrar nombre y tipo principal en tu colección.");
                     System.out.println("4) Mostrar nombre y tipo de todos los pokemon");
                     System.out.println("5) Mostrar pokemon por habilidad.");
-                    System.out.println("6) Mostrar pokemon por habilidad.");
+                    System.out.println("6) Salir.");
                     menu = sc.nextLine();
 
                     if(menu.equals("1"))
                     {
-                        System.out.println("Ingrese el nombre del pokemon que desea agregar.");
+                        System.out.println("\nIngrese el nombre del pokemon que desea agregar.");
                         String nuevo_pokemon = sc.nextLine();
+                        
+                        if (pokemonMap.containsKey(nuevo_pokemon))
+                        {
+                            if (MiPokedex.containsKey(nuevo_pokemon))
+                            {
+                                System.out.println("\nEste Pokémon ya está en tu colección.");
+                            }
+                            else
+                            {
+                                MiPokedex.put(nuevo_pokemon, pokemonMap.get(nuevo_pokemon));
+                                System.out.println("\n" + nuevo_pokemon + " ha sido agregado a tu colección.");
+                            }
+                        }
+                        else
+                        {
+                            System.out.println("\nNo se encontró un Pokémon con ese nombre.");
+                        }
                     }
                     else if(menu.equals("2"))
                     {
+                        System.out.println("\nIngrese el nombre del pokemon que desea agregar.");
+                        String pokemon_buscado = sc.nextLine();
 
+                        if (pokemonMap.containsKey(pokemon_buscado))
+                        {
+                            Pokemon pokemon = pokemonMap.get(pokemon_buscado);
+                            System.out.println(pokemon);
+                        }
+                        else
+                        {
+                            System.out.println("\nNo se encontró un Pokémon con ese nombre.");
+                        }
                     }
                     else if(menu.equals("3"))
                     {
-
+                        if (MiPokedex.isEmpty())
+                        {
+                            System.out.println("\nTu Pokédex está vacía.");
+                        } 
+                        else
+                        {
+                            MiPokedex.entrySet().stream()
+                                .sorted((p1, p2) -> p1.getValue().getTipoPrincipal().compareToIgnoreCase(p2.getValue().getTipoPrincipal()))
+                                .forEach(entry -> System.out.println(entry.getKey() + " - " + entry.getValue().getTipoPrincipal()));
+                        }
                     }
                     else if(menu.equals("4"))
                     {
-
+                        pokemonMap.entrySet().stream()
+                                .sorted((p1, p2) -> p1.getValue().getTipoPrincipal().compareToIgnoreCase(p2.getValue().getTipoPrincipal()))
+                                .forEach(entry -> System.out.println(entry.getKey() + " - " + entry.getValue().getTipoPrincipal()));
                     }
                     else if(menu.equals("5"))
                     {
+                        System.out.println("\n¿Qué habilidad desea filtrar?");
+                        String habilidad_filtrada = sc.nextLine();
+                        boolean encontrado = false;
+                        System.out.println("");
 
+                        for (Map.Entry<String, Pokemon> entry : pokemonMap.entrySet())
+                        {
+                            Pokemon pokemon_habilidad = entry.getValue();
+                            if (pokemon_habilidad.tieneHabilidad(habilidad_filtrada))
+                            {
+                                System.out.println(pokemon_habilidad.getNombre());
+                                encontrado = true;
+                            }
+                        }
+
+                        if (!encontrado)
+                        {
+                            System.out.println("No se encontraron Pokémon con esta habilidad");
+                        }
                     }
                     else if(menu.equals("6"))
                     {
-
+                        flag = false;
                     }
                     else
                     {
-                        System.out.println("Opción incorrecta.");
+                        System.out.println("\nOpción incorrecta.");
                     }
                 }
             }
             else
             {
-                System.out.println("La lista está vacía.");
+                System.out.println("\nLa lista está vacía.");
             }
         }
 
