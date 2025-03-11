@@ -1,3 +1,11 @@
+/**
+ * @author Ricardo Rodríguez
+ * @version 1
+ * Clase principal.
+ * fecha_creación = 06/03/2025
+ * fecha_modificación = 09/03/2025
+ */
+
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
